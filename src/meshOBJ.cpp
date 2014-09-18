@@ -20,8 +20,10 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <stdexcept>
+#include <fstream>
+#include <sstream>
+
 #include "meshOBJ.h"
-#include <model_obj.hpp>
 
 MeshOBJ::MeshOBJ()
 {
@@ -36,55 +38,47 @@ MeshOBJ::MeshOBJ(unsigned int meshType)
 void MeshOBJ::loadMesh(char *path)
 {
     // try to load the model
-    ModelOBJ reader;
-    bool loaded = reader.import( path );
+    std::ifstream file;
+    file.open( path );
+    std::vector<float> vs;
+    std::vector<unsigned int> is;
 
     // check if it was loaded
-    if( loaded )
+    if( file.is_open() )
     {
-        // let's see what we've got
-        // NOTE: ModelOBJ automatically triangulates everything
-        bool hasVertices = reader.hasPositions();
-
-        // check if there are any vertices
-        if( hasVertices )
+        while( !file.eof() )
         {
-            // init stuff
-            vertexCount = reader.getNumberOfVertices();
-            indexCount = reader.getNumberOfTriangles();
+            // get the next line
+            std::string line;
+            std::getline( file, line );
+            std::stringstream lineSS;
+            lineSS<< line;
+            lineSS.seekg( 1 );
+            float tempV;
+            float tempI;
 
-            // reserve stuff
-            vertices = new float[ vertexCount*3 ];
-            indices = new unsigned int[ indexCount * 3 ];
-
-            // copy vertex the data
-            for( size_t i=0; i<vertexCount; i++ )
+            // interpret line
+            switch( line[0] )
             {
-                const ModelOBJ::Vertex &v = reader.getVertex( i );
-
-                // copy position
-                vertices[i*3+0] = v.position[0] ;
-                vertices[i*3+1] = v.position[1] ;
-                vertices[i*3+2] = v.position[2] ;
-            }
-
-            // copy triangle conectivity
-            const int *meshIndices = reader.getIndexBuffer();
-            for( size_t i=0; i<indexCount; i++ )
-            {
-                indices[i*3+0] = static_cast<unsigned int>( meshIndices[i*3 + 0] );
-                indices[i*3+1] = static_cast<unsigned int>( meshIndices[i*3 + 1] );
-                indices[i*3+2] = static_cast<unsigned int>( meshIndices[i*3 + 2] );
+                case 'v' : while( !lineSS.eof() ){ lineSS >> tempV; vs.push_back(tempV); } break;
+                case 'f' : while( !lineSS.eof() ){ lineSS >> tempI; is.push_back(tempI); } break;
+                default : break;
             }
         }
-        else
-            throw std::runtime_error( "MeshOBJ::loadMesh: no vertices." );
+
+        // copy
+        vertexCount = is.size();
+        vertices = new float[is.size()*3];
+        int idx=0;
+        for( int i=0; i<is.size(); i++ )
+            for( int j=0; j<3; j++ )
+                vertices[idx++] = vs[ (is[i]-1)*3+j ];
     }
     else
         throw std::runtime_error( "MeshOBJ::loadMesh: could not load the model." );
 
     analyzeMesh();
 
-    meshType = Mesh::MESH_TYPE_TRIANGLES;
-    vertexPerFace = 3;
+    meshType = Mesh::MESH_TYPE_QUADS;
+    vertexPerFace = 4;
 }

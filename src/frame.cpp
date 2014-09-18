@@ -43,9 +43,9 @@ FrameQT::FrameQT(QWidget *parent) : QGLWidget(parent)
 	setFocusPolicy(Qt::StrongFocus);
 
 	// FBO's
-	g_iShadowTexSize=2048;
+    g_iShadowTexSize=4096;
 	g_iShadowTexRowCount=8;
-	g_iGroundShadowTexSize=1024;
+    g_iGroundShadowTexSize=4096;
 	g_iShadowTextureCount = 0;
 	g_fTexelOffset = 0.5f;
 	
