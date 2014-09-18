@@ -27,120 +27,28 @@
  * e-mail   : duliu@in.tum.de                                  *
  *                                                             *
  ***************************************************************/
-#ifndef MESH_H_
-#define MESH_H_
+#ifndef MESHOBJ_H_
+#define MESHOBJ_H_
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
 
-#include "mathutils.h"
 
-class Mesh
+
+#include "mesh.h"
+
+class MeshOBJ : public Mesh
 {
-
-protected:
-
-	// Mesh type
-	unsigned int meshType;
-	int vertexPerFace;
-	
-	// Vertex data
-	int vertexCount;
-	float *vertices;
-		
-	// Index data
-	int indexCount;
-	unsigned int *indices;
-	
-	// Normal data
-	int normalCount;
-	float *normals;
-	int faceNormalCount;
-	float *faceNormals;
-	
-	// Texture Coordinate data
-	int texCoordCount;
-	float *texCoords;
-	
-	// Color data
-	int colorCount;
-	float *colors;
-	int colorComponentCount;
-	
-	// various information
-	float sizeX, sizeY, sizeZ;
-	float centerX, centerY, centerZ;
-	
-	// analyze the mesh to determine its center and size
-	void analyzeMesh();
-
-	
 public:
-
-	static const unsigned int MESH_TYPE_TRIANGLES = 0x0001;
-	static const unsigned int MESH_TYPE_QUADS = 0x0002;
-	
 	// empty constructor
-	Mesh();
-	
-	// deconstructor
-	~Mesh();
+    MeshOBJ();
 	
 	// basic contructor
-	Mesh(unsigned int meshType);
-	
+    MeshOBJ(unsigned int meshType);
+
 	// initialize Mesh
-    virtual void loadMesh(char *path) = 0;
-	
-	// calculate indices
-	void calculateIndices();
-	
-	// calculate normals
-	void calculateFaceNormals();
-	void calculateNormals();
-
-	// invert faces
-	void invertFaces();
-	void invertNormals();
-	
-	// center the mesh to (x,y,z)
-	void centerMesh(float x, float y, float z);
-	// center object to (0,0,0)
-	void centerMesh();
-	
-	// scale the mesh to a new size, scale* gives the absolute size for that coordinate
-	void resizeMesh(float newSizeX, float newSizeY, float newSizeZ);
-	// scale the mesh so that it's max size on either coordinate is scale
-	void resizeMesh(float newSize);
-
-	// translate the Mesh
-	void translateMesh(float transX, float transY, float transZ);
-
-	// rotate the mesh
-	void rotateMesh(float rotX, float rotY, float rotZ);
-	
-	// get the sizes of the Mesh
-	inline float getSizeX();
-	inline float getSizeY();
-	inline float getSizeZ();
-	
-	// getters
-	inline unsigned int getMeshType();
-	inline int getVertexPerFace();
-	
-	inline int getVertexCount();
-	inline float* getVertices();
-		
-	inline int getIndexCount();
-	inline unsigned int* getIndices();
-	
-	inline int getNormalCount();
-	inline float* getNormals();
-	inline int getFaceNormalCount();
-	inline float* getFaceNormals();
+	void loadMesh(char *path);
 };
-
-#include "mesh.inl"
 
 #endif

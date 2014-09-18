@@ -51,6 +51,7 @@
 # include "mathutils.h"
 # include "shader.h"
 # include "meshDXF.h"
+# include "meshOBJ.h"
 
 class FrameQT : public QGLWidget
 {
@@ -83,7 +84,7 @@ public:
 	inline bool getSmoothShading();
 	inline void setSmoothShading(bool input);
 
-	inline MeshDXF *getModel();
+    inline Mesh *getModel();
 
 	inline void setSceneRenderingMode(float input);
 	
@@ -185,7 +186,7 @@ private:
 	//Model
 	bool g_bMeshLoaded;
 	bool g_bSmoothShading;
-	MeshDXF *g_oMesh;
+    Mesh *g_oMesh;
 	
 	// Mesh - geometry data
 	float *g_fpVertices;

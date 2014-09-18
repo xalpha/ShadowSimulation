@@ -138,9 +138,17 @@ void FrameQT::initModel(char *fileName)
 
 	// delete previously loaded model 
 	if(g_oMesh!=NULL)	delete g_oMesh;
+
+    // find out that type this is
+    std::string filename_str(fileName);
+    std::string extension = filename_str.substr( filename_str.find_last_of('.'), filename_str.size()-filename_str.find_last_of('.') );
+    printf("%s##\n",extension.c_str());
 	
-	// Load Model	
-	g_oMesh = new MeshDXF(Mesh::MESH_TYPE_QUADS);
+    // Load Model
+    if( extension.compare(".obj") == 0 )
+        g_oMesh = new MeshOBJ;
+    else if( extension.compare(".dxf") == 0 )
+        g_oMesh = new MeshDXF(Mesh::MESH_TYPE_QUADS);
 	g_oMesh->loadMesh(fileName);
 	g_oMesh->calculateFaceNormals();
 	g_oMesh->resizeMesh(1.0f);
@@ -242,10 +250,10 @@ void FrameQT::initModel(char *fileName)
 		float Sd[2] = { A[0]*d[0] + A[1]*d[1] + A[2]*d[2],  Bp[0]*d[0] + Bp[1]*d[1] + Bp[2]*d[2]};
 
 		// calculate clip planes
-		float minX = min(Sa[0],min(Sb[0],min(Sc[0],Sd[0])));
-		float maxX = max(Sa[0],max(Sb[0],max(Sc[0],Sd[0])));
-		float minY = min(Sa[1],min(Sb[1],min(Sc[1],Sd[1])));
-		float maxY = max(Sa[1],max(Sb[1],max(Sc[1],Sd[1])));
+        float minX = std::min(Sa[0],std::min(Sb[0],std::min(Sc[0],Sd[0])));
+        float maxX = std::max(Sa[0],std::max(Sb[0],std::max(Sc[0],Sd[0])));
+        float minY = std::min(Sa[1],std::min(Sb[1],std::min(Sc[1],Sd[1])));
+        float maxY = std::max(Sa[1],std::max(Sb[1],std::max(Sc[1],Sd[1])));
 
 		// store clip planes
 		g_fpCameraClipPlanes[i*4 +0]= minX;
@@ -384,10 +392,10 @@ void FrameQT::updateModel()
 		float Sd[2] = { A[0]*d[0] + A[1]*d[1] + A[2]*d[2],  Bp[0]*d[0] + Bp[1]*d[1] + Bp[2]*d[2]};
 
 		// calculate clip planes
-		float minX = min(Sa[0],min(Sb[0],min(Sc[0],Sd[0])));
-		float maxX = max(Sa[0],max(Sb[0],max(Sc[0],Sd[0])));
-		float minY = min(Sa[1],min(Sb[1],min(Sc[1],Sd[1])));
-		float maxY = max(Sa[1],max(Sb[1],max(Sc[1],Sd[1])));
+        float minX = std::min(Sa[0],std::min(Sb[0],std::min(Sc[0],Sd[0])));
+        float maxX = std::max(Sa[0],std::max(Sb[0],std::max(Sc[0],Sd[0])));
+        float minY = std::min(Sa[1],std::min(Sb[1],std::min(Sc[1],Sd[1])));
+        float maxY = std::max(Sa[1],std::max(Sb[1],std::max(Sc[1],Sd[1])));
 
 		// store clip planes
 		g_fpCameraClipPlanes[i*4 +0]= minX;
@@ -978,7 +986,7 @@ void FrameQT::updateMeshShadowTexture()
 			int offsetY = tempRow * (g_iShadowTexSize / g_iShadowTexRowCount);
 	
 			// calculate the cosinus of the angle between the light vector and the surface normal
-			// do not render the face if the the angle is greater than 90° (i.e. cosinus of the angle is negative)
+			// do not render the face if the the angle is greater than 90 (i.e. cosinus of the angle is negative)
 			float cosAngle = dot(g_pfLightPos, &g_fpFaceNormals[i*3]);
 			if( g_bSmoothShading || ((cosAngle >= 0.0f) && (g_fLightElevation > 0.0f)) )
 			{

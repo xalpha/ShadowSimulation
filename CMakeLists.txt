@@ -61,12 +61,14 @@ set( ShadowSimulation_INC
     include/mathutils.h
     include/mesh.h
     include/meshDXF.h
+    include/meshOBJ.h
     include/normalize.h
     include/shader.h
     include/sunPosition.h
     include/texture.h
     include/vbObject.h
-    include/windowQT.h )
+    include/windowQT.h
+    extern/obj/model_obj.hpp )
 set( ShadowSimulation_SRC 
     src/bmp.cpp
     src/fbObject.cpp
@@ -74,12 +76,14 @@ set( ShadowSimulation_SRC
     src/main.cpp
     src/mesh.cpp
     src/meshDXF.cpp
+    src/meshOBJ.cpp
     src/normalize.cpp
     src/shader.cpp
     src/sunPosition.cpp
     src/texture.cpp
     src/vbObject.cpp
-    src/windowQT.cpp )
+    src/windowQT.cpp
+    extern/obj/model_obj.cpp )
 
 set( ShadowSimulation_QT_UI 
     ui/gui_aboutWindow.ui
@@ -91,6 +95,7 @@ set( ShadowSimulation_QT_UI
 # set include directories
 set( ShadowSimulation_INCLUDE_DIRS
     include
+    extern/obj
     $ENV{HOME}/.local/include
     ${OPENGL_INCLUDE_DIR}
     ${GLEW_INCLUDE_PATH}

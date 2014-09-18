@@ -27,17 +27,6 @@
 #define M__PI_2 1.5707963267949
 #define M__2_PI 6.2831853071796
 
-
-// determine the maximum of two numbers
-#ifndef max
-#define max(a,b) ((a)>(b) ? (a) : (b))
-#endif
-
-// determine the minimum of two numbers
-#ifndef min
-#define min(a,b) ((a)<(b) ? (a) : (b))
-#endif
-
 // convert radians to degrees
 #ifndef radToDeg
 #define radToDeg(x) (180.0 * x / 3.1415926535898)

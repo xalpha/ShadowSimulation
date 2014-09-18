@@ -326,7 +326,7 @@ inline void FrameQT::setSmoothShading(bool input)
 }
 
 
-inline MeshDXF *FrameQT::getModel()
+inline Mesh *FrameQT::getModel()
 {
 	return g_oMesh;
 }

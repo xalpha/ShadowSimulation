@@ -69,7 +69,7 @@ WindowQT::WindowQT()
 
 void WindowQT::openModel()
 {
-	QString s = QFileDialog::getOpenFileName(this, "Choose a file to open", "/home", "Data Exchange File (*.dxf)");
+    QString s = QFileDialog::getOpenFileName(this, "Choose a file to open", "/home", "Data Exchange File (*.dxf);;Wavefront OBJ (*.obj)");
 	if(s==NULL)	return;
 	char *fileName = new char[s.size()+1];
 	for(int i=0; i<s.size();i++)
