@@ -47,7 +47,6 @@ public slots:
 	void okModelAdjustment();
 	void cancelModelAdjustment();
 
-	//void setConfigureShadows();
 	void openModel();
 	void exitProgram();
 	void aboutProgram();

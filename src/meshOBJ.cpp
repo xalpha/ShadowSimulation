@@ -22,6 +22,7 @@
 #include <stdexcept>
 #include <fstream>
 #include <sstream>
+#include <vector>
 
 #include "meshOBJ.h"
 
