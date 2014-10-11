@@ -35,8 +35,8 @@
 # include <math.h>
 # include <string.h>
 
-# include <QGLWidget>
 # include <GL/glew.h>
+# include <QGLWidget>
 
 #include <nyx/texture.hpp>
 #include <nyx/frame_buffer_object.hpp>
@@ -53,7 +53,7 @@
 class ShadowView : public QGLWidget
 {
 public:
-    ShadowView( QObject* parent=0 );
+    ShadowView( QWidget* parent=0 );
 
     inline Mesh *getModel();
 

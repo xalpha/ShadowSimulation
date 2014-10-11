@@ -23,7 +23,7 @@
 #include "MeshOBJ.hpp"
 
 #include "ShadowComputation.hpp"
-#include <GL/glu.h>
+//#include <GL/glu.h>
 
 
 ShadowComputation::ShadowComputation() :
