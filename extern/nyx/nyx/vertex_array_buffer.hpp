@@ -43,7 +43,7 @@ public:
 
     virtual void set_components( unsigned int components );
 
-    virtual void bind();
+    virtual void bind() const;
 };
 
 
@@ -69,7 +69,7 @@ inline void vertex_array_buffer<T>::set_components( unsigned int components )
 
 
 template <typename T>
-inline void vertex_array_buffer<T>::bind()
+inline void vertex_array_buffer<T>::bind() const
 {
     buffer<T>::bind();
     glVertexPointer( vertex_array_buffer<T>::m_size, util::type<T>::GL(), 0, 0 );

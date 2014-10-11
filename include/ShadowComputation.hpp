@@ -56,11 +56,12 @@ public:
 
     void loadModel( const std::string& filename );
 
-	inline void setStartDate(int y, int m, int d, int h, int min, int s);
-	inline void setEndDate(int y, int m, int d, int h, int min, int s);
-	inline void setLongitude(int deg, int min, int sec);
-	inline void setLatitude(int deg, int min, int sec);
-	inline void setTimeZone(int inputTimeZone);
+    void setStartDate(int y, int m, int d, int h, int min, int s);
+    void setEndDate(int y, int m, int d, int h, int min, int s);
+    void setLongitude(int deg, int min, int sec);
+    void setLatitude(int deg, int min, int sec);
+    void setTimeZone(int inputTimeZone);
+    void setShadowParams( int faceTexRes );
 
     void compute( int steps, bool smoothShading );
 
@@ -113,18 +114,6 @@ private:
 	//Model
 	bool g_bMeshLoaded;
 	bool g_bSmoothShading;
-    //Mesh *g_oMesh;
-	
-	// Mesh - geometry data
-	float *g_fpVertices;
-	int g_iVertexCount;
-	float *g_fpNormals;
-	int g_iNormalCount;
-	float *g_fpFaceNormals;
-	int g_iFaceNormalCount;
-	float *g_fpTexCoords;
-	int g_iTexCoordCount;
-    nyx::vertex_buffer_object<float, unsigned int> g_oMeshVBO;
 	
 	// Mesh - secondary attributes
 	float g_fGroundLevel;
@@ -135,7 +124,8 @@ private:
 	
 	// Shadow Texture FBO's
 	int g_iShadowTexSize;
-	int g_iShadowTexRowCount;
+    int g_iShadowTexRowCount;
+    int g_iFaceTexSize;
 	int g_iGroundShadowTexSize;
 	float g_fTexelOffset;
     nyx::frame_buffer_objects<float> g_oMeshTexFBO;

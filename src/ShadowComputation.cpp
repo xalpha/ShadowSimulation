@@ -27,13 +27,14 @@
 
 
 ShadowComputation::ShadowComputation() :
-    g_iTexCoordCount(0),
+    g_fpCameraMatrices(0),
+    g_fpCameraClipPlanes(0),
     g_iCameraMatrixCount(0),
-    g_iCameraClipPlaneCount(0)
-
+    g_iCameraClipPlaneCount(0),
+    g_oMesh(0)
 {
 	// FBO's
-	g_iShadowTexRowCount=8;
+    g_iFaceTexSize = 16;
 	g_iShadowTextureCount = 0;
 	g_fTexelOffset = 0.5f;
 
@@ -77,19 +78,7 @@ void ShadowComputation::loadModel( const std::string& filename )
 
     // calculate texture coordinates and camera matrices
     initModel();
-
-    // init the rest
-    initFBOs();
-    initShadowingPeriod();
-    initLighting();
-    initTextures();
-    initSunPosition();
-    initShadows();
-    initShaders();
 }
-
-
-
 
 
 void ShadowComputation::setStartDate(int y, int m, int d, int h, int min, int s)
@@ -136,9 +125,22 @@ void ShadowComputation::setTimeZone(int inputTimeZone)
 }
 
 
+void ShadowComputation::setShadowParams( int faceTexRes )
+{
+    g_iFaceTexSize = faceTexRes;
+}
+
+
 void ShadowComputation::compute( int steps, bool smoothShading )
 {
-    // TODO
+    // init the rest
+    initFBOs();
+    initShadowingPeriod();
+    initLighting();
+    initTextures();
+    initSunPosition();
+    initShadows();
+    initShaders();
 }
 
 
@@ -151,155 +153,13 @@ std::weak_ptr<Mesh> ShadowComputation::mesh()
 void ShadowComputation::initModel()
 {
     // preprocess mesh
-    g_oMesh->calculateFaceNormals();
+    g_oMesh->calculateNormals();
     g_oMesh->resizeMesh(1.0f);
     g_oMesh->centerMesh(0.0f,g_oMesh->getSizeY()/2.0f,0.0f);
     g_fGroundLevel = g_oMesh->getSizeY()/2.0f; // "land" mesh on the ground
 
-    // delete old data
-    if(g_iTexCoordCount!=0) delete [] g_fpTexCoords;
-    if(g_iCameraMatrixCount!=0) delete [] g_fpCameraMatrices;
-    if(g_iCameraClipPlaneCount!=0) delete [] g_fpCameraClipPlanes;
-
-    // initialize Arrays
-    g_iVertexCount = g_oMesh->getVertexCount();
-    g_fpVertices = g_oMesh->getVertices();
-    g_iNormalCount = g_oMesh->getNormalCount();
-    g_fpNormals = g_oMesh->getNormals();
-    g_iFaceNormalCount = g_oMesh->getFaceNormalCount();
-    g_fpFaceNormals = g_oMesh->getFaceNormals();
-    g_iTexCoordCount = g_iVertexCount;
-    g_fpTexCoords = new float[g_iTexCoordCount*2];
-    g_iCameraMatrixCount = g_iFaceNormalCount;
-    g_fpCameraMatrices = new float[g_iCameraMatrixCount*16];
-    g_iCameraClipPlaneCount = g_iFaceNormalCount;
-    g_fpCameraClipPlanes = new float[g_iCameraClipPlaneCount*4];
-
-	// calculate texture coordinates and camera matrices
-	for(int i=0; i<g_iVertexCount/4;i++)
-	{
-		// get the vertices
-		float *a = &g_fpVertices[(i*4+0)*3];
-		float *b = &g_fpVertices[(i*4+1)*3];
-		float *c = &g_fpVertices[(i*4+2)*3];
-		float *d = &g_fpVertices[(i*4+3)*3];
-
-		// calculate A = b-a and B = c-a
-		float A[3] = { b[0]-a[0], b[1]-a[1], b[2]-a[2] };
-		float B[3] = { c[0]-a[0], c[1]-a[1], c[2]-a[2] };
-
-		// calculate normal to the triangle
-		float N[3] = { A[1]*B[2]-A[2]*B[1], A[2]*B[0]-A[0]*B[2], A[0]*B[1]-A[1]*B[0] };
-
-		// calculate normal to the plane between the triangle normal and A
-		float Bp[3] = { N[1]*A[2]-N[2]*A[1], N[2]*A[0]-N[0]*A[2], N[0]*A[1]-N[1]*A[0] };
-
-		// normalize A, N and Bp as the will form a new rotation matrix and thus should be normal
-		float lengthA = sqrt(A[0]*A[0]+A[1]*A[1]+A[2]*A[2]);
-		A[0]/=lengthA;
-		A[1]/=lengthA;
-		A[2]/=lengthA;
-		float lengthN = sqrt(N[0]*N[0]+N[1]*N[1]+N[2]*N[2]);
-		N[0]/=lengthN;
-		N[1]/=lengthN;
-		N[2]/=lengthN;
-		float lengthBp= sqrt(Bp[0]*Bp[0]+Bp[1]*Bp[1]+Bp[2]*Bp[2]);
-		Bp[0]/=lengthBp;
-		Bp[1]/=lengthBp;
-		Bp[2]/=lengthBp;
-
-		// define and store rotation matrix
-		float M[16]={ A[0],Bp[0],N[0],0.0f,
-		              A[1],Bp[1],N[1],0.0f,
-		              A[2],Bp[2],N[2],0.0f,
-		              0.0f,0.0f, 0.0f,1.0f	};
-		for(int j=0;j<16;j++)
-			g_fpCameraMatrices[ i*16 + j ] = M[j];
-
-		// calculate screen coordinates
-		float Sa[2] = { A[0]*a[0] + A[1]*a[1] + A[2]*a[2],  Bp[0]*a[0] + Bp[1]*a[1] + Bp[2]*a[2]};
-		float Sb[2] = { A[0]*b[0] + A[1]*b[1] + A[2]*b[2],  Bp[0]*b[0] + Bp[1]*b[1] + Bp[2]*b[2]};
-		float Sc[2] = { A[0]*c[0] + A[1]*c[1] + A[2]*c[2],  Bp[0]*c[0] + Bp[1]*c[1] + Bp[2]*c[2]};
-		float Sd[2] = { A[0]*d[0] + A[1]*d[1] + A[2]*d[2],  Bp[0]*d[0] + Bp[1]*d[1] + Bp[2]*d[2]};
-
-		// calculate clip planes
-        float minX = std::min(Sa[0],std::min(Sb[0],std::min(Sc[0],Sd[0])));
-        float maxX = std::max(Sa[0],std::max(Sb[0],std::max(Sc[0],Sd[0])));
-        float minY = std::min(Sa[1],std::min(Sb[1],std::min(Sc[1],Sd[1])));
-        float maxY = std::max(Sa[1],std::max(Sb[1],std::max(Sc[1],Sd[1])));
-
-		// store clip planes
-		g_fpCameraClipPlanes[i*4 +0]= minX;
-		g_fpCameraClipPlanes[i*4 +1]= maxX;
-		g_fpCameraClipPlanes[i*4 +2]= minY;
-		g_fpCameraClipPlanes[i*4 +3]= maxY;
-		
-		// calculate texture coordinates
-		g_fpTexCoords[ (i*4+0)*2 +0] = (Sa[0]-minX)/(maxX-minX);
-		g_fpTexCoords[ (i*4+0)*2 +1] = (Sa[1]-minY)/(maxY-minY);
-
-		g_fpTexCoords[ (i*4+1)*2 +0] = (Sb[0]-minX)/(maxX-minX);
-		g_fpTexCoords[ (i*4+1)*2 +1] = (Sb[1]-minY)/(maxY-minY);
-
-		g_fpTexCoords[ (i*4+2)*2 +0] = (Sc[0]-minX)/(maxX-minX);
-		g_fpTexCoords[ (i*4+2)*2 +1] = (Sc[1]-minY)/(maxY-minY);
-
-		g_fpTexCoords[ (i*4+3)*2 +0] = (Sd[0]-minX)/(maxX-minX);
-		g_fpTexCoords[ (i*4+3)*2 +1] = (Sd[1]-minY)/(maxY-minY);
-		
-		// move the texture coordinates to the inside (prevent interpolating with the next texel)
-		float textureResolution= (float)g_iShadowTexSize / (float)g_iShadowTexRowCount;
-		float scale = 1.0f - ((g_fTexelOffset*2.0f) / textureResolution);	// scaling down the texCoords with one texel;
-	
-		// get the texture coordinates of the quad
-		float *texA = &g_fpTexCoords[ (i*4+0)*2];
-		float *texB = &g_fpTexCoords[ (i*4+1)*2];
-		float *texC = &g_fpTexCoords[ (i*4+2)*2];
-		float *texD = &g_fpTexCoords[ (i*4+3)*2];
-
-		// calculate old center of the primitive
-		float oldCenter[3] = {(texA[0]+texB[0]+texC[0]+texD[0])/4.0f, (texA[1]+texB[1]+texC[1]+texD[1])/4.0f};
-
-		for(int j=0; j<8; j++)
-			texA[j] *= scale;
-	
-		// calculate new center of the primitive
-		float newCenter[3] = {(texA[0]+texB[0]+texC[0]+texD[0])/4.0f, (texA[1]+texB[1]+texC[1]+texD[1])/4.0f};
-
-		// calculate the diference between the two centers
-		float delta[2] = {oldCenter[0] - newCenter[0], oldCenter[1] - newCenter[1]};
-
-		// translate the new coordinates back to the old center
-		for(int j=0; j<4; j++)
-		{
-			texA[j*2+0] += delta[0];
-			texA[j*2+1] += delta[1];
-		}
-		
-		// scale and translate texture coordinates into the page texture
-		int index = (i)%(g_iShadowTexRowCount*g_iShadowTexRowCount);
-		int tempRow = index / g_iShadowTexRowCount;
-		int tempColumn = index % g_iShadowTexRowCount;
-
-		g_fpTexCoords[ (i*4+0)*2 +0] = ( g_fpTexCoords[ (i*4+0)*2 +0] + (float)tempRow )/(float)g_iShadowTexRowCount;
-		g_fpTexCoords[ (i*4+0)*2 +1] = ( g_fpTexCoords[ (i*4+0)*2 +1] + (float)tempColumn )/(float)g_iShadowTexRowCount;
-
-		g_fpTexCoords[ (i*4+1)*2 +0] = ( g_fpTexCoords[ (i*4+1)*2 +0] + (float)tempRow )/(float)g_iShadowTexRowCount;
-		g_fpTexCoords[ (i*4+1)*2 +1] = ( g_fpTexCoords[ (i*4+1)*2 +1] + (float)tempColumn )/(float)g_iShadowTexRowCount;
-
-		g_fpTexCoords[ (i*4+2)*2 +0] = ( g_fpTexCoords[ (i*4+2)*2 +0] + (float)tempRow )/(float)g_iShadowTexRowCount;
-		g_fpTexCoords[ (i*4+2)*2 +1] = ( g_fpTexCoords[ (i*4+2)*2 +1] + (float)tempColumn )/(float)g_iShadowTexRowCount;
-
-		g_fpTexCoords[ (i*4+3)*2 +0] = ( g_fpTexCoords[ (i*4+3)*2 +0] + (float)tempRow )/(float)g_iShadowTexRowCount;
-		g_fpTexCoords[ (i*4+3)*2 +1] = ( g_fpTexCoords[ (i*4+3)*2 +1] + (float)tempColumn )/(float)g_iShadowTexRowCount;
-	}
-	
-
-	// update the vertex buffer objects
-    g_oMeshVBO.configure( GL_QUADS, GL_DYNAMIC_DRAW_ARB );
-    g_oMeshVBO.initVertices( g_fpVertices, g_iVertexCount );
-    g_oMeshVBO.initNormals( g_fpNormals );
-    g_oMeshVBO.initTexCoords( g_fpTexCoords );
+    // compute the texture atlas
+    g_oMesh->computeTextureAtlas( g_iShadowTexSize, g_iShadowTexRowCount, &g_fpCameraMatrices, &g_fpCameraClipPlanes , g_fTexelOffset );
 }
 
 
@@ -313,6 +173,7 @@ void ShadowComputation::initFBOs()
     g_oGroundTexFBO.init();
 
 	// generate color buffer textures
+    g_iShadowTexRowCount = g_iShadowTexSize / g_iFaceTexSize;
 	g_iShadowTextureCount = g_iCameraMatrixCount / (g_iShadowTexRowCount*g_iShadowTexRowCount);
 	if( (g_iCameraMatrixCount % (g_iShadowTexRowCount*g_iShadowTexRowCount)) != 0) g_iShadowTextureCount++;
 	printf("g_iShadowTextureCount=%i\n",g_iShadowTextureCount);
@@ -511,7 +372,7 @@ void ShadowComputation::updateShadowMap()
 	depthTexture.disable();
 	glClearColor(1,1,1,1);
 	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	g_oMeshVBO.draw();
+    g_oMesh->VBO().draw();
 	depthTexture.disable();
 	g_oShadowFBO.disable();
 }
@@ -535,7 +396,7 @@ void ShadowComputation::updateShadowAtlas()
 	}
 
 	// draw black geometry
-	for(int i=0;i<g_iVertexCount/4;i++)
+    for(int i=0;i<g_oMesh->getVertexCount();i++)
 	{
 		int viewPortSize = g_iShadowTexSize / g_iShadowTexRowCount;
 
@@ -563,7 +424,7 @@ void ShadowComputation::updateShadowAtlas()
 
 		glColor4f(0.0f,0.0f,0.0f,0.0f);
 	
-        g_oMeshVBO.draw_elements(i,1);
+        g_oMesh->VBO().draw_elements(i,1);
 			
 		g_oMeshTexFBO.disable();
 
@@ -602,7 +463,8 @@ void ShadowComputation::updateShadowAtlas()
 
 		int viewPortSize = g_iShadowTexSize / g_iShadowTexRowCount;
 		
-		for(int i=0;i<g_iVertexCount/4;i++)
+        float* faceNormals = g_oMesh->getFaceNormals();
+        for(int i=0;i<g_oMesh->getVertexCount();i++)
 		{
 			int indexTex = i / (g_iShadowTexRowCount*g_iShadowTexRowCount);
 			int index = i % (g_iShadowTexRowCount*g_iShadowTexRowCount);
@@ -615,7 +477,7 @@ void ShadowComputation::updateShadowAtlas()
 	
 			// calculate the cosinus of the angle between the light vector and the surface normal
 			// do not render the face if the the angle is greater than 90 (i.e. cosinus of the angle is negative)
-			float cosAngle = dot(g_pfLightPos, &g_fpFaceNormals[i*3]);
+            float cosAngle = dot(g_pfLightPos, &faceNormals[i*3]);
 			if( g_bSmoothShading || ((cosAngle >= 0.0f) && (g_fLightElevation > 0.0f)) )
 			{
 				glViewport(offsetX,offsetY,viewPortSize,viewPortSize);	// and set new dimensions
@@ -639,7 +501,7 @@ void ShadowComputation::updateShadowAtlas()
                 g_oMeshTexFBO.attach_color_texture( g_ipShadowTextures[indexTex] );
                 g_oMeshTexFBO.enable();
                 glColor4f(cosAngle, (float)((int)g_bSmoothShading), 0.0f, 1.0f/(float)g_iSteps);
-                g_oMeshVBO.draw_vertices(i,4);
+                g_oMesh->VBO().draw_vertices(i,4);
 				g_oMeshTexFBO.disable();
 			}
 		}

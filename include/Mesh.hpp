@@ -34,7 +34,10 @@
 #include <stdlib.h>
 #include <math.h>
 
+#include <nyx/vertex_buffer_object.hpp>
+
 #include "util.hpp"
+
 
 class Mesh
 {
@@ -71,6 +74,8 @@ protected:
 	// various information
 	float sizeX, sizeY, sizeZ;
 	float centerX, centerY, centerZ;
+
+    nyx::vertex_buffer_object<float, unsigned int> g_oMeshVBO;
 	
 	// analyze the mesh to determine its center and size
 	void analyzeMesh();
@@ -100,6 +105,9 @@ public:
 	void calculateFaceNormals();
 	void calculateNormals();
 
+    // compute texture atlas
+    void computeTextureAtlas(int g_iShadowTexSize, int g_iShadowTexRowCount, float** g_fpCameraMatrices, float** g_fpCameraClipPlanes , float g_fTexelOffset);
+
 	// invert faces
 	void invertFaces();
 	void invertNormals();
@@ -119,6 +127,9 @@ public:
 
 	// rotate the mesh
 	void rotateMesh(float rotX, float rotY, float rotZ);
+
+    // self explainatory
+    void updateVBO();
 	
 	// get the sizes of the Mesh
     float getSizeX(){	return  sizeX;}
@@ -135,4 +146,5 @@ public:
     float* getNormals() {	return normals;		}
     int getFaceNormalCount(){	return faceNormalCount;}
     float* getFaceNormals(){	return faceNormals;	}
+    nyx::vertex_buffer_object<float, unsigned int>& VBO(){ return g_oMeshVBO; }
 };

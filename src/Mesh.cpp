@@ -21,29 +21,47 @@
 
 #include "Mesh.hpp"
 
-Mesh::Mesh()
+Mesh::Mesh() :
+    vertices(0),
+    vertexCount(0),
+    indices(0),
+    indexCount(0),
+    normals(0),
+    normalCount(0),
+    faceNormals(0),
+    faceNormalCount(0),
+    texCoords(0),
+    texCoordCount(0),
+    colors(0),
+    colorCount(0)
 {
-	vertexCount=0;
-	indexCount=0;
-	normalCount=0;
-	faceNormalCount=0;
-	texCoordCount=0;
-	colorCount=0;
 }
 
 
 Mesh::~Mesh()
 {
-	if(vertexCount != 0)	delete [] vertices;
-	if(indexCount != 0)	delete [] indices;
-	if(normalCount != 0)	delete [] normals;
-	if(faceNormalCount !=0)	delete [] faceNormals;
-	if(texCoordCount != 0)	delete [] texCoords;
-	if(colorCount != 0)	delete [] colors;
+    if(vertexCount != 0) delete [] vertices;
+    if(indexCount != 0) delete [] indices;
+    if(normalCount != 0) delete [] normals;
+    if(faceNormalCount !=0) delete [] faceNormals;
+    if(texCoordCount != 0) delete [] texCoords;
+    if(colorCount != 0) delete [] colors;
 }
 
 
-Mesh::Mesh(unsigned int meshType)
+Mesh::Mesh(unsigned int meshType) :
+    vertices(0),
+    vertexCount(0),
+    indices(0),
+    indexCount(0),
+    normals(0),
+    normalCount(0),
+    faceNormals(0),
+    faceNormalCount(0),
+    texCoords(0),
+    texCoordCount(0),
+    colors(0),
+    colorCount(0)
 {
 	switch(meshType)
 	{
@@ -57,13 +75,6 @@ Mesh::Mesh(unsigned int meshType)
 
 		default : printf("Invalid Mesh Type, must be MESH_TYPE_TRIANGLES, or MESH_TYPE_QUADS!");
 	}
-
-	vertexCount=0;
-	indexCount=0;
-	normalCount=0;
-	faceNormalCount=0;
-	texCoordCount=0;
-	colorCount=0;
 }
 
 
@@ -299,6 +310,144 @@ void Mesh::calculateNormals()
 
 		//printf( "Normal Vertex %i: %f\t%f\t%f\n", i, normals[i*3+0], normals[i*3+1], normals[i*3+2]);
 	}
+}
+
+
+void Mesh::computeTextureAtlas( int g_iShadowTexSize, int g_iShadowTexRowCount, float** g_fpCameraMatrices, float** g_fpCameraClipPlanes, float g_fTexelOffset )
+{
+    // re-init stuff
+    if( texCoords != 0 ) delete [] texCoords;
+    if( *g_fpCameraMatrices != 0 ) delete [] *g_fpCameraMatrices;
+    if( *g_fpCameraClipPlanes != 0 ) delete [] *g_fpCameraClipPlanes;
+    texCoords = new float[vertexCount*2];
+    (*g_fpCameraMatrices) = new float[indexCount*16];
+    (*g_fpCameraClipPlanes) = new float[indexCount*4];
+
+    // set some pointers
+    float* cameraMatrices = (*g_fpCameraMatrices);
+    float* cameraClipPlanes = (*g_fpCameraClipPlanes);
+
+    // calculate texture coordinates and camera matrices
+    for(int i=0; i<vertexCount/4;i++)
+    {
+        // get the vertices
+        float *a = &vertices[(i*4+0)*3];
+        float *b = &vertices[(i*4+1)*3];
+        float *c = &vertices[(i*4+2)*3];
+        float *d = &vertices[(i*4+3)*3];
+
+        // calculate A = b-a and B = c-a
+        float A[3] = { b[0]-a[0], b[1]-a[1], b[2]-a[2] };
+        float B[3] = { c[0]-a[0], c[1]-a[1], c[2]-a[2] };
+
+        // calculate normal to the triangle
+        float N[3] = { A[1]*B[2]-A[2]*B[1], A[2]*B[0]-A[0]*B[2], A[0]*B[1]-A[1]*B[0] };
+
+        // calculate normal to the plane between the triangle normal and A
+        float Bp[3] = { N[1]*A[2]-N[2]*A[1], N[2]*A[0]-N[0]*A[2], N[0]*A[1]-N[1]*A[0] };
+
+        // normalize A, N and Bp as the will form a new rotation matrix and thus should be normal
+        float lengthA = sqrt(A[0]*A[0]+A[1]*A[1]+A[2]*A[2]);
+        A[0]/=lengthA;
+        A[1]/=lengthA;
+        A[2]/=lengthA;
+        float lengthN = sqrt(N[0]*N[0]+N[1]*N[1]+N[2]*N[2]);
+        N[0]/=lengthN;
+        N[1]/=lengthN;
+        N[2]/=lengthN;
+        float lengthBp= sqrt(Bp[0]*Bp[0]+Bp[1]*Bp[1]+Bp[2]*Bp[2]);
+        Bp[0]/=lengthBp;
+        Bp[1]/=lengthBp;
+        Bp[2]/=lengthBp;
+
+        // define and store rotation matrix
+        float M[16]={ A[0],Bp[0],N[0],0.0f,
+                      A[1],Bp[1],N[1],0.0f,
+                      A[2],Bp[2],N[2],0.0f,
+                      0.0f,0.0f, 0.0f,1.0f	};
+        for(int j=0;j<16;j++)
+            cameraMatrices[ i*16 + j ] = M[j];
+
+        // calculate screen coordinates
+        float Sa[2] = { A[0]*a[0] + A[1]*a[1] + A[2]*a[2],  Bp[0]*a[0] + Bp[1]*a[1] + Bp[2]*a[2]};
+        float Sb[2] = { A[0]*b[0] + A[1]*b[1] + A[2]*b[2],  Bp[0]*b[0] + Bp[1]*b[1] + Bp[2]*b[2]};
+        float Sc[2] = { A[0]*c[0] + A[1]*c[1] + A[2]*c[2],  Bp[0]*c[0] + Bp[1]*c[1] + Bp[2]*c[2]};
+        float Sd[2] = { A[0]*d[0] + A[1]*d[1] + A[2]*d[2],  Bp[0]*d[0] + Bp[1]*d[1] + Bp[2]*d[2]};
+
+        // calculate clip planes
+        float minX = std::min(Sa[0],std::min(Sb[0],std::min(Sc[0],Sd[0])));
+        float maxX = std::max(Sa[0],std::max(Sb[0],std::max(Sc[0],Sd[0])));
+        float minY = std::min(Sa[1],std::min(Sb[1],std::min(Sc[1],Sd[1])));
+        float maxY = std::max(Sa[1],std::max(Sb[1],std::max(Sc[1],Sd[1])));
+
+        // store clip planes
+        cameraClipPlanes[i*4 +0]= minX;
+        cameraClipPlanes[i*4 +1]= maxX;
+        cameraClipPlanes[i*4 +2]= minY;
+        cameraClipPlanes[i*4 +3]= maxY;
+
+        // calculate texture coordinates
+        texCoords[ (i*4+0)*2 +0] = (Sa[0]-minX)/(maxX-minX);
+        texCoords[ (i*4+0)*2 +1] = (Sa[1]-minY)/(maxY-minY);
+
+        texCoords[ (i*4+1)*2 +0] = (Sb[0]-minX)/(maxX-minX);
+        texCoords[ (i*4+1)*2 +1] = (Sb[1]-minY)/(maxY-minY);
+
+        texCoords[ (i*4+2)*2 +0] = (Sc[0]-minX)/(maxX-minX);
+        texCoords[ (i*4+2)*2 +1] = (Sc[1]-minY)/(maxY-minY);
+
+        texCoords[ (i*4+3)*2 +0] = (Sd[0]-minX)/(maxX-minX);
+        texCoords[ (i*4+3)*2 +1] = (Sd[1]-minY)/(maxY-minY);
+
+        // move the texture coordinates to the inside (prevent interpolating with the next texel)
+        float textureResolution= (float)g_iShadowTexSize / (float)g_iShadowTexRowCount;
+        float scale = 1.0f - ((g_fTexelOffset*2.0f) / textureResolution);	// scaling down the texCoords with one texel;
+
+        // get the texture coordinates of the quad
+        float *texA = &texCoords[ (i*4+0)*2];
+        float *texB = &texCoords[ (i*4+1)*2];
+        float *texC = &texCoords[ (i*4+2)*2];
+        float *texD = &texCoords[ (i*4+3)*2];
+
+        // calculate old center of the primitive
+        float oldCenter[3] = {(texA[0]+texB[0]+texC[0]+texD[0])/4.0f, (texA[1]+texB[1]+texC[1]+texD[1])/4.0f};
+
+        for(int j=0; j<8; j++)
+            texA[j] *= scale;
+
+        // calculate new center of the primitive
+        float newCenter[3] = {(texA[0]+texB[0]+texC[0]+texD[0])/4.0f, (texA[1]+texB[1]+texC[1]+texD[1])/4.0f};
+
+        // calculate the diference between the two centers
+        float delta[2] = {oldCenter[0] - newCenter[0], oldCenter[1] - newCenter[1]};
+
+        // translate the new coordinates back to the old center
+        for(int j=0; j<4; j++)
+        {
+            texA[j*2+0] += delta[0];
+            texA[j*2+1] += delta[1];
+        }
+
+        // scale and translate texture coordinates into the page texture
+        int index = (i)%(g_iShadowTexRowCount*g_iShadowTexRowCount);
+        int tempRow = index / g_iShadowTexRowCount;
+        int tempColumn = index % g_iShadowTexRowCount;
+
+        texCoords[ (i*4+0)*2 +0] = ( texCoords[ (i*4+0)*2 +0] + (float)tempRow )/(float)g_iShadowTexRowCount;
+        texCoords[ (i*4+0)*2 +1] = ( texCoords[ (i*4+0)*2 +1] + (float)tempColumn )/(float)g_iShadowTexRowCount;
+
+        texCoords[ (i*4+1)*2 +0] = ( texCoords[ (i*4+1)*2 +0] + (float)tempRow )/(float)g_iShadowTexRowCount;
+        texCoords[ (i*4+1)*2 +1] = ( texCoords[ (i*4+1)*2 +1] + (float)tempColumn )/(float)g_iShadowTexRowCount;
+
+        texCoords[ (i*4+2)*2 +0] = ( texCoords[ (i*4+2)*2 +0] + (float)tempRow )/(float)g_iShadowTexRowCount;
+        texCoords[ (i*4+2)*2 +1] = ( texCoords[ (i*4+2)*2 +1] + (float)tempColumn )/(float)g_iShadowTexRowCount;
+
+        texCoords[ (i*4+3)*2 +0] = ( texCoords[ (i*4+3)*2 +0] + (float)tempRow )/(float)g_iShadowTexRowCount;
+        texCoords[ (i*4+3)*2 +1] = ( texCoords[ (i*4+3)*2 +1] + (float)tempColumn )/(float)g_iShadowTexRowCount;
+    }
+
+    // update the VBO's
+    updateVBO();
 }
 
 
@@ -599,5 +748,15 @@ void Mesh::rotateMesh(float rotX, float rotY, float rotZ)
 
 	// update data
 	analyzeMesh();
+}
+
+
+void Mesh::updateVBO()
+{
+    // update the vertex buffer objects
+    g_oMeshVBO.configure( GL_QUADS, GL_DYNAMIC_DRAW_ARB );
+    g_oMeshVBO.initVertices( vertices, vertexCount );
+    g_oMeshVBO.initNormals( normals );
+    g_oMeshVBO.initTexCoords( texCoords );
 }
 

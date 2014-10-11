@@ -81,9 +81,9 @@ public:
 
     void update();
 
-    void draw();
-    void draw_vertices( unsigned int offset, unsigned int size );
-    void draw_elements( unsigned int offset, unsigned int size );
+    void draw() const;
+    void draw_vertices( unsigned int offset, unsigned int size ) const;
+    void draw_elements( unsigned int offset, unsigned int size ) const;
 
 protected:
     // array buffers GL_VERTEX_ARRAY, GL_NORMAL_ARRAY, GL_COLOR_ARRAY, GL_TEXTURE_COORD_ARRAY
@@ -203,7 +203,7 @@ inline void vertex_buffer_object<Ta, Te>::update()
 
 
 template <typename Ta, typename Te>
-inline void vertex_buffer_object<Ta, Te>::draw()
+inline void vertex_buffer_object<Ta, Te>::draw() const
 {
     if( m_elements.is_valid() )
         draw_elements( 0, m_elements.count() );
@@ -213,7 +213,7 @@ inline void vertex_buffer_object<Ta, Te>::draw()
 
 
 template <typename Ta, typename Te>
-inline void vertex_buffer_object<Ta, Te>::draw_vertices( unsigned int offset, unsigned int size )
+inline void vertex_buffer_object<Ta, Te>::draw_vertices( unsigned int offset, unsigned int size ) const
 {
     // vertices
     if( m_vertices.is_valid() ) m_vertices.bind();
@@ -237,7 +237,7 @@ inline void vertex_buffer_object<Ta, Te>::draw_vertices( unsigned int offset, un
 
 
 template <typename Ta, typename Te>
-inline void vertex_buffer_object<Ta, Te>::draw_elements( unsigned int offset, unsigned int size )
+inline void vertex_buffer_object<Ta, Te>::draw_elements( unsigned int offset, unsigned int size ) const
 {
     // vertices
     if( m_vertices.is_valid() ) m_vertices.bind();

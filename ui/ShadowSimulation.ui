@@ -268,7 +268,7 @@
           </layout>
          </widget>
         </item>
-        <item row="1" column="0" colspan="2">
+        <item row="1" column="1">
          <widget class="QGroupBox" name="groupBox_8">
           <property name="title">
            <string>Exposures</string>
@@ -284,6 +284,28 @@
              </property>
              <property name="maximum">
               <number>255</number>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item row="1" column="0">
+         <widget class="QGroupBox" name="groupBox_9">
+          <property name="title">
+           <string>TimeZone</string>
+          </property>
+          <layout class="QVBoxLayout" name="verticalLayout_8">
+           <item>
+            <widget class="QSpinBox" name="timezone">
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
+             </property>
+             <property name="minimum">
+              <number>1</number>
+             </property>
+             <property name="maximum">
+              <number>12</number>
              </property>
             </widget>
            </item>

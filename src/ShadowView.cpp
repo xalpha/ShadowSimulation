@@ -70,6 +70,12 @@ ShadowView::ShadowView(QWidget *parent) : QGLWidget(parent)
 }
 
 
+void ShadowView::setMesh( std::weak_ptr<Mesh> mesh )
+{
+    m_mesh = mesh;
+}
+
+
 void ShadowView::initializeGL()
 {
     // initialize glew
@@ -81,7 +87,7 @@ void ShadowView::initializeGL()
 
 void ShadowView::paintGL()
 {
-    //
+    // setup the view matrix
     setupUserViewProj();
 
     // enable Texturing
@@ -97,28 +103,28 @@ void ShadowView::paintGL()
 //    // render the sun
 //    renderSun();
 
-//    // Modelview Transformation
-//    glMatrixMode(GL_MODELVIEW);
-//    glLoadIdentity();
-//    glTranslatef( 0.0f, 0.0f, g_fCameraZoom); // Zoom
-//    glRotatef(g_fCameraElevation, 1.0f, 0.0f, 0.0f);  // rotate elevation
-//    glRotatef(g_fCameraAzimuth, 0.0f, 1.0f, 0.0f);    // rotate azimuth
-//    glTranslatef( 0.0f, -g_fGroundLevel, 0.0f);   // Lower the whole scene so that the center of the Mesh overlappes with the center of rotation
+    // Modelview Transformation
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+    glTranslatef( 0.0f, 0.0f, g_fCameraZoom); // Zoom
+    glRotatef(g_fCameraElevation, 1.0f, 0.0f, 0.0f);  // rotate elevation
+    glRotatef(g_fCameraAzimuth, 0.0f, 1.0f, 0.0f);    // rotate azimuth
+    //glTranslatef( 0.0f, -g_fGroundLevel, 0.0f);   // Lower the whole scene so that the center of the Mesh overlappes with the center of rotation
 
-//    if(g_bMeshLoaded)
-//    {
-//        // enable sceneRendering Shader
-//        sceneRendering.enable();
+    if( m_mesh.expired() )
+    {
+        // enable sceneRendering Shader
+        //sceneRendering.enable();
 
-//        // setup shader parameters
-//        // TODO not elegant! try to do with uniform variabiles
-//        glColor4f(g_fSceneRenderingMode/4.0f, 0.0f, 0.0f, 0.0f);
+        // setup shader parameters
+        // TODO not elegant! try to do with uniform variabiles
+        //glColor4f(g_fSceneRenderingMode/4.0f, 0.0f, 0.0f, 0.0f);
 
-//        // render the scene
-//        renderMeshTex();
+        // render the scene
+        //m_mesh.lock()->draw();
 
-//        sceneRendering.disable();
-//    }
+        //sceneRendering.disable();
+    }
 }
 
 void ShadowView::resizeGL(int width,int height)
@@ -713,45 +719,45 @@ void ShadowView::resizeGL(int width,int height)
 //}
 
 
-//void ShadowView::mousePressEvent(QMouseEvent *event)
-//{
-//        g_iMousePosX = event->x();
-//        g_iMousePosY = event->y();
-//}
+void ShadowView::mousePressEvent(QMouseEvent *event)
+{
+    g_iMousePosX = event->x();
+    g_iMousePosY = event->y();
+}
 
-//void ShadowView::mouseMoveEvent(QMouseEvent *event)
-//{
-//        if(event->buttons() & Qt::LeftButton)
-//        {
-//                // new Mouse Movement
-//                float dx = (float) -(g_iMousePosX - event->x()) / 10.0f;
-//                float dy = (float) -(g_iMousePosY - event->y()) / 10.0f;
+void ShadowView::mouseMoveEvent(QMouseEvent *event)
+{
+    if(event->buttons() & Qt::LeftButton)
+    {
+        // new Mouse Movement
+        float dx = (float) -(g_iMousePosX - event->x()) / 10.0f;
+        float dy = (float) -(g_iMousePosY - event->y()) / 10.0f;
 
-//                // Update Azimuth & Elevation
-//                g_fCameraAzimuth   += dx;
-//                g_fCameraElevation += dy;
+        // Update Azimuth & Elevation
+        g_fCameraAzimuth   += dx;
+        g_fCameraElevation += dy;
 
-//                // predevent big values
-//                g_fCameraAzimuth   = fmod(g_fCameraAzimuth,360.0f);
-//                g_fCameraElevation = fmod(g_fCameraElevation,360.0f);
-//        }
-//        else if(event->buttons() & Qt::RightButton)
-//        {
-//                // calculate relative zoom
-//                float dz = (float)(g_iMousePosY - event->y()) / 50.0f;
+        // predevent big values
+        g_fCameraAzimuth   = fmod(g_fCameraAzimuth,360.0f);
+        g_fCameraElevation = fmod(g_fCameraElevation,360.0f);
+    }
+    else if(event->buttons() & Qt::RightButton)
+    {
+        // calculate relative zoom
+        float dz = (float)(g_iMousePosY - event->y()) / 50.0f;
 
-//                // make zoom logarithmic
-//                dz *= log(fabs((double)g_fCameraZoom/10.0)+1.0);
+        // make zoom logarithmic
+        dz *= log(fabs((double)g_fCameraZoom/10.0)+1.0);
 
-//                // update camera zoom
-//                g_fCameraZoom += dz;
-//        }
+        // update camera zoom
+        g_fCameraZoom += dz;
+    }
 
-//        g_iMousePosX = event->x();
-//        g_iMousePosY = event->y();
+    g_iMousePosX = event->x();
+    g_iMousePosY = event->y();
 
-//        updateGL();
-//}
+    updateGL();
+}
 
 
 //void ShadowView::keyPressEvent( QKeyEvent * event)

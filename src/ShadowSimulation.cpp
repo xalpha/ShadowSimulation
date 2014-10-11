@@ -36,15 +36,39 @@ ShadowSimulation::ShadowSimulation()
 
 void ShadowSimulation::loadModel()
 {
+    // load model
     std::string filename = QFileDialog::getOpenFileName(this, "Choose a file to open", ".", "Wavefront OBJ (*.obj);;Data Exchange File (*.dxf)").toStdString();
     if( filename.size() > 0 )
         m_sc.loadModel( filename );
+
+    // update shadows
+    updateShadows();
 }
 
 
 void ShadowSimulation::updateShadows()
 {
+    // set start & end
+    m_sc.setStartDate( ui.start_date->date().year(), ui.start_date->date().month(), ui.start_date->date().day(),
+                       ui.start_time->time().hour(), ui.start_time->time().minute(),ui.start_time->time().second() );
+    m_sc.setEndDate( ui.end_date->date().year(), ui.end_date->date().month(), ui.end_date->date().day(),
+                     ui.end_time->time().hour(), ui.end_time->time().minute(),ui.end_time->time().second() );
+    m_sc.setLongitude( ui.long_deg->value(), ui.long_min->value(), ui.long_sec->value() );
+    m_sc.setLongitude( ui.lat_deg->value(), ui.lat_min->value(), ui.lat_sec->value() );
+    m_sc.setTimeZone( ui.timezone->value() );
 
+    // set shadow params
+    switch( ui.face_res->currentIndex() )
+    {
+        case 0 : m_sc.setShadowParams( 8 ); break;
+        default :
+        case 1 : m_sc.setShadowParams( 16 ); break;
+        case 2 : m_sc.setShadowParams( 32 ); break;
+        case 3 : m_sc.setShadowParams( 64 ); break;
+    }
+
+    // compue the shadows
+    m_sc.compute( ui.slides->value(), ui.smooth_shading->isChecked() );
 }
 
 

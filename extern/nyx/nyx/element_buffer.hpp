@@ -43,7 +43,7 @@ public:
 
     virtual void set_components( unsigned int components );
 
-    unsigned int getPrimitiveType();
+    unsigned int getPrimitiveType() const;
 
 protected:
     unsigned int m_type;  // primitive type
@@ -81,7 +81,7 @@ inline void element_buffer<T>::set_components( unsigned int components )
 
 
 template <typename T>
-inline unsigned int element_buffer<T>::getPrimitiveType()
+inline unsigned int element_buffer<T>::getPrimitiveType() const
 {
     return m_type;
 }

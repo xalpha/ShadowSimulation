@@ -34,9 +34,11 @@
 # include <stdlib.h>	
 # include <math.h>
 # include <string.h>
+# include <memory>
 
 # include <GL/glew.h>
 # include <QGLWidget>
+# include <QMouseEvent>
 
 #include <nyx/texture.hpp>
 #include <nyx/frame_buffer_object.hpp>
@@ -55,6 +57,8 @@ class ShadowView : public QGLWidget
 public:
     ShadowView( QWidget* parent=0 );
 
+    void setMesh( std::weak_ptr<Mesh> mesh );
+
 //protected:
 //	// initialize the program
 //	void initLighting();
@@ -69,8 +73,8 @@ public:
     virtual void initializeGL();
     void paintGL();
     void resizeGL(int width, int height);
-//	void mousePressEvent(QMouseEvent *event);
-//	void mouseMoveEvent(QMouseEvent *event);
+    void mousePressEvent(QMouseEvent *event);
+    void mouseMoveEvent(QMouseEvent *event);
 //	void keyPressEvent( QKeyEvent * event);
 //	// TODO keyboard function
 	
@@ -102,12 +106,14 @@ private:
     int g_iWindowHeight;    // height of viewport.
     float g_fAspect;        // aspect ratio of viewport
 	
-//	// camera properties
-//	float g_fCameraElevation, g_fCameraAzimuth;
-//	float g_fCameraZoom;
+    // camera properties
+    float g_fCameraElevation, g_fCameraAzimuth;
+    float g_fCameraZoom;
 	
-//	// mouse handling
-//	int g_iMousePosX,g_iMousePosY;
+    // mouse handling
+    int g_iMousePosX,g_iMousePosY;
+
+    std::weak_ptr<Mesh> m_mesh;
 
 //	// Light Controls
 //	float *g_pfLightPos;

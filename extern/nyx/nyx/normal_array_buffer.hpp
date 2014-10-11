@@ -43,7 +43,7 @@ public:
 
     virtual void set_components( unsigned int components );
 
-    virtual void bind();
+    virtual void bind() const;
 };
 
 
@@ -69,7 +69,7 @@ inline void normal_array_buffer<T>::set_components( unsigned int components )
 
 
 template <typename T>
-inline void normal_array_buffer<T>::bind()
+inline void normal_array_buffer<T>::bind() const
 {
     buffer<T>::bind();
     glNormalPointer(util::type<T>::GL(), 0, 0 );
