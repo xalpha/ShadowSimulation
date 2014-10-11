@@ -54,45 +54,49 @@ add_definitions(${QT_DEFINITIONS})
 set( ShadowSimulation_Target shadowSimulation )
 
 # set the header files of QObject derived classes
-set( ShadowSimulation_INC 
-    include/bmp.h
-    include/fbObject.h
-    include/frame.h
-    include/mathutils.h
-    include/mesh.h
-    include/meshDXF.h
-    include/meshOBJ.h
-    include/normalize.h
-    include/shader.h
-    include/sunPosition.h
-    include/texture.h
-    include/vbObject.h
-    include/windowQT.h )
+set( ShadowSimulation_INC
+    include/Mesh.hpp
+    include/MeshDXF.hpp
+    include/MeshOBJ.hpp
+    include/SunPosition.hpp
+    include/ShadowComputation.hpp
+    include/ShadowSimulation.hpp
+    include/ShadowView.hpp
+    include/util.hpp
+    extern/cimg/CImg.h
+    extern/nyx/nyx/array_buffer.hpp
+    extern/nyx/nyx/buffer.hpp
+    extern/nyx/nyx/color_array_buffer.hpp
+    extern/nyx/nyx/element_buffer.hpp
+    extern/nyx/nyx/exception.hpp
+    extern/nyx/nyx/frame_buffer_object.hpp
+    extern/nyx/nyx/gl.hpp
+    extern/nyx/nyx/normal_array_buffer.hpp
+    extern/nyx/nyx/program.hpp
+    extern/nyx/nyx/shader.hpp
+    extern/nyx/nyx/texcoord_array_buffer.hpp
+    extern/nyx/nyx/texture.hpp
+    extern/nyx/nyx/util.hpp
+    extern/nyx/nyx/vertex_array_buffer.hpp
+    extern/nyx/nyx/vertex_buffer_object.hpp )
 set( ShadowSimulation_SRC 
-    src/bmp.cpp
-    src/fbObject.cpp
-    src/frame.cpp
     src/main.cpp
-    src/mesh.cpp
-    src/meshDXF.cpp
-    src/meshOBJ.cpp
-    src/normalize.cpp
-    src/shader.cpp
-    src/sunPosition.cpp
-    src/texture.cpp
-    src/vbObject.cpp
-    src/windowQT.cpp )
+    src/Mesh.cpp
+    src/MeshDXF.cpp
+    src/MeshOBJ.cpp
+    src/SunPosition.cpp
+    src/ShadowComputation.cpp
+    src/ShadowSimulation.cpp
+    src/ShadowView.cpp )
 
 set( ShadowSimulation_QT_UI 
-    ui/gui_aboutWindow.ui
-    ui/gui_mainWindow.ui
-    ui/gui_modelAdjustment.ui
-    ui/gui_shadowingPeriod.ui )
-#set( ShadowSimulation_QT_RES res/ShadowSimulation.qrc )
+    ui/ShadowSimulation.ui )
 
 # set include directories
 set( ShadowSimulation_INCLUDE_DIRS
     include
+    extern/cimg/
+    extern/nyx/
     $ENV{HOME}/.local/include
     ${OPENGL_INCLUDE_DIR}
     ${GLEW_INCLUDE_PATH}
@@ -126,16 +130,15 @@ add_executable( ${ShadowSimulation_Target}
     ${ShadowSimulation_INC}
     ${ShadowSimulation_QT_HPP_MOC}
     ${ShadowSimulation_QT_UI_UIC} )
-#    ${ShadowSimulation_QT_RES_SRC} )
 
-## enable C++11 support
-#if( NOT WIN32 )
-#    if( CMAKE_COMPILER_IS_GNUCXX )
-#        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --std=c++0x")
-#    else( CMAKE_COMPILER_IS_GNUCXX )
-#        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Qunused-arguments")
-#    endif()
-#endif()
+# enable C++11 support
+if( NOT WIN32 )
+    if( CMAKE_COMPILER_IS_GNUCXX )
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --std=c++0x")
+    else( CMAKE_COMPILER_IS_GNUCXX )
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Qunused-arguments")
+    endif()
+endif()
 
 # set link libraries
 target_link_libraries( ${ShadowSimulation_Target} ${ShadowSimulation_LINK_LIBS} )

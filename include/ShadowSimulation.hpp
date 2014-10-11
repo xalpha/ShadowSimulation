@@ -19,13 +19,28 @@
 //                                                                            //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <QApplication>
-#include "ShadowSimulation.hpp"
+#pragma once
 
-int main(int argc, char *argv[])
+
+#include "ui_ShadowSimulation.h"
+#include <QMainWindow>
+
+
+
+class ShadowSimulation : public QMainWindow
 {
-	QApplication app(argc, argv);
-    ShadowSimulation window;
-    window.show();
-	return app.exec();
-}
+	Q_OBJECT
+
+public:
+    ShadowSimulation();
+
+public slots:
+    void loadModel();
+    void updateShadows();
+
+private:
+    Ui::ShadowSimulation ui;
+	bool normalsCalculated;
+	int sceneRenderingMode;
+};
+

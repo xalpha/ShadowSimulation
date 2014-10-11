@@ -19,13 +19,35 @@
 //                                                                            //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <QApplication>
-#include "ShadowSimulation.hpp"
+/***************************************************************
+ *                                                             *
+ * program  : Mesh                                             *
+ * author   : Alexandru Duliu                                  *
+ * version  : 0.1                                              *
+ * e-mail   : duliu@in.tum.de                                  *
+ *                                                             *
+ ***************************************************************/
 
-int main(int argc, char *argv[])
+#pragma once
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+
+
+
+#include "Mesh.hpp"
+
+class MeshOBJ : public Mesh
 {
-	QApplication app(argc, argv);
-    ShadowSimulation window;
-    window.show();
-	return app.exec();
-}
+public:
+	// empty constructor
+    MeshOBJ();
+	
+	// basic contructor
+    MeshOBJ(unsigned int meshType);
+
+	// initialize Mesh
+    virtual void loadMesh(const char *path);
+};
+
