@@ -142,6 +142,12 @@ void ShadowComputation::compute( int steps, bool smoothShading )
 }
 
 
+std::weak_ptr<Mesh> ShadowComputation::mesh()
+{
+    return std::weak_ptr<Mesh>(g_oMesh);
+}
+
+
 void ShadowComputation::initModel()
 {
     // preprocess mesh
@@ -300,6 +306,11 @@ void ShadowComputation::initModel()
 void ShadowComputation::initFBOs()
 {
 	printf( "Initializing Frame Buffer Objects...");
+
+    // FBOs
+    g_oShadowFBO.init();
+    g_oMeshTexFBO.init();
+    g_oGroundTexFBO.init();
 
 	// generate color buffer textures
 	g_iShadowTextureCount = g_iCameraMatrixCount / (g_iShadowTexRowCount*g_iShadowTexRowCount);
@@ -509,67 +520,6 @@ void ShadowComputation::updateShadowMap()
 // This methode renders each polygon with shadows into a texture
 void ShadowComputation::updateShadowAtlas()
 {
-	//// DEBUG
-	//printf("\n// window properties\n");
-	//printf("g_iWindowWidth= %i\n",g_iWindowWidth);
-	//printf("g_iWindowHeight= %i\n",g_iWindowHeight);
-	//printf("g_fAspect= %f\n",g_fAspect);
-	//printf("\n");
-	//printf("\n// camera properties\n");
-	//printf("g_fCameraAzimuth= %f\n",g_fCameraAzimuth);
-	//printf("g_fCameraElevation= %f\n",g_fCameraElevation);
-	//printf("g_fCameraZoom= %f\n",g_fCameraZoom);
-	//printf("\n");
-	//printf("\n// window properties\n");
-	//printf("g_iMousePosX= %i\n",g_iMousePosX);
-	//printf("g_iMousePosY= %i\n",g_iMousePosY);
-	//printf("\n");
-	//printf("\n// Light Controls\n");
-	//printf("g_pfLightPos= %f\t%f\t%f\t%f\n",g_pfLightPos[0],g_pfLightPos[1],g_pfLightPos[2],g_pfLightPos[3]);
-	//printf("g_fLightTransZ= %f\n",g_fLightTransZ);
-	//printf("\n");
-	//printf("\n// Light Controls\n");
-	//printf("g_sCurrentDate= %i\t%i\t%i\t%i\t%i\t%i\n",g_sCurrentDate.year,g_sCurrentDate.month,g_sCurrentDate.day,g_sCurrentDate.hour,g_sCurrentDate.minute,g_sCurrentDate.second);
-	//printf("g_ipLatitude= %i\t%i\t%i\n",g_ipLatitude[0],g_ipLatitude[1],g_ipLatitude[2]);
-	//printf("g_ipLongitude= %i\t%i\t%i\n",g_ipLongitude[0],g_ipLongitude[1],g_ipLongitude[2]);
-	//printf("g_fTimeZone= %i\n",g_fTimeZone);
-	//printf("\n");
-	//printf("\n// Light Controls\n");
-	//printf("g_pfBiasMatrix= \n");
-	//for(int i=0;i<16;i++)
-	//{
-	//	printf("\t%f",g_pfBiasMatrix[i]);
-	//	if((i%4)==3)	printf("\n");
-	//}
-	//printf("g_pfLightProjection= \n");
-	//for(int i=0;i<16;i++)
-	//{
-	//	printf("\t%f",g_pfLightProjection[i]);
-	//	if((i%4)==3)	printf("\n");
-	//}
-	//printf("g_pfLightModelView= \n");
-	//for(int i=0;i<16;i++)
-	//{
-	//	printf("\t%f",g_pfLightModelView[i]);
-	//	if((i%4)==3)	printf("\n");
-	//}
-	//printf("\n");
-	//printf("\n// Shadow Texture FBO's\n");
-	//printf("g_iShadowTexSize= %i\n",g_iShadowTexSize);
-	//printf("g_iShadowTexRowCount= %i\n",g_iShadowTexRowCount);
-	//printf("g_iGroundShadowTexSize= %i\n",g_iGroundShadowTexSize);
-	//printf("g_fTexelOffset= %f\n",g_fTexelOffset);
-	//printf("\n");
-	//printf("\n// shadowing period\n");
-	//printf("g_sStartDate= %i\t%i\t%i\t%i\t%i\t%i\n",g_sStartDate.year,g_sStartDate.month,g_sStartDate.day,g_sStartDate.hour,g_sStartDate.minute,g_sStartDate.second);
-	//printf("g_sStopDate= %i\t%i\t%i\t%i\t%i\t%i\n",g_sStopDate.year,g_sStopDate.month,g_sStopDate.day,g_sStopDate.hour,g_sStopDate.minute,g_sStopDate.second);
-	//printf("g_iSteps= %i\n",g_iSteps);
-	//printf("\n");
-	//printf("\n// Model\n");
-	//printf("g_bMeshLoaded= %i\n",g_bMeshLoaded);
-	//printf("\n");
-
-
 	// Setup the mask
 	// clear the FBO's to (0,0,1,0) 
 	for(int i=0;i<g_iShadowTextureCount;i++)

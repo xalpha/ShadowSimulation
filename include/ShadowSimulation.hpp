@@ -26,6 +26,8 @@
 #include <QMainWindow>
 
 
+#include <ShadowComputation.hpp>
+
 
 class ShadowSimulation : public QMainWindow
 {
@@ -40,7 +42,8 @@ public slots:
 
 private:
     Ui::ShadowSimulation ui;
-	bool normalsCalculated;
-	int sceneRenderingMode;
+
+    ShadowComputation m_sc;
+
 };
 

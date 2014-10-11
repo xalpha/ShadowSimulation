@@ -139,9 +139,7 @@ template <typename Ta, typename Te>
 inline void vertex_buffer_object<Ta, Te>::initNormals( const Ta *normals)
 {
     if( m_vertices.count() > 0 )
-    {
         m_normals.init(normals, m_vertices.count());
-    }
 }
 
 
@@ -149,9 +147,7 @@ template <typename Ta, typename Te>
 inline void vertex_buffer_object<Ta, Te>::initColors( const Ta *colors)
 {
     if( m_vertices.count() > 0 )
-    {
         m_colors.init(colors, m_vertices.count());
-    }
 }
 
 
@@ -159,9 +155,7 @@ template <typename Ta, typename Te>
 inline void vertex_buffer_object<Ta, Te>::initTexCoords( const Ta *texCoords)
 {
     if( m_vertices.count() > 0 )
-    {
         m_texCoords.init(texCoords, m_vertices.count());
-    }
 }
 
 
@@ -272,6 +266,3 @@ inline void vertex_buffer_object<Ta, Te>::draw_elements( unsigned int offset, un
 
 
 } // end namespace nyx
-
-
-

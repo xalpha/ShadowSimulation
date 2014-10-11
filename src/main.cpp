@@ -19,8 +19,10 @@
 //                                                                            //
 ///////////////////////////////////////////////////////////////////////////////
 
+
 #include <QApplication>
 #include "ShadowSimulation.hpp"
+#include <QGLContext>
 
 int main(int argc, char *argv[])
 {

@@ -19,6 +19,8 @@
 //                                                                            //
 ///////////////////////////////////////////////////////////////////////////////
 
+#include <QFileDialog>
+
 #include "ShadowSimulation.hpp"
 
 ShadowSimulation::ShadowSimulation()
@@ -27,13 +29,16 @@ ShadowSimulation::ShadowSimulation()
 	ui.setupUi(this);
 
     // connect stuff
-    //connect( &ui, SLOT() )
+    connect( ui.load, SIGNAL(clicked()), this, SLOT(loadModel()) );
+    connect( ui.compute, SIGNAL(clicked()), this, SLOT(updateShadows()) );
 }
 
 
 void ShadowSimulation::loadModel()
 {
-
+    std::string filename = QFileDialog::getOpenFileName(this, "Choose a file to open", ".", "Wavefront OBJ (*.obj);;Data Exchange File (*.dxf)").toStdString();
+    if( filename.size() > 0 )
+        m_sc.loadModel( filename );
 }
 
 

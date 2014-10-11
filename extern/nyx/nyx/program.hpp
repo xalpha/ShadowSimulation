@@ -43,6 +43,8 @@ public:
     base_shader_program();
     virtual ~base_shader_program();
 
+    void init();
+
     void load( const std::basic_string<Ch> &src, shader_type type );
     void load_vertex_shader( const std::basic_string<Ch> &src );
     void load_fragment_shader( const std::basic_string<Ch> &src );
@@ -58,6 +60,7 @@ protected:
 
 protected:
     // program
+    bool m_initialized;
     unsigned int m_id;
     bool m_loaded;
 
@@ -73,16 +76,27 @@ typedef base_shader_program<char> shader_program;
 // Implementations
 ///
 template<typename Ch>
-inline base_shader_program<Ch>::base_shader_program()
+inline base_shader_program<Ch>::base_shader_program() : m_initialized(true), m_id(0)
 {
-    m_id = glCreateProgram();
 }
 
 
 template<typename Ch>
 inline base_shader_program<Ch>::~base_shader_program()
 {
-    glDeleteProgram(m_id);
+    if( m_initialized )
+        glDeleteProgram(m_id);
+}
+
+
+template<typename Ch>
+inline void base_shader_program<Ch>::init()
+{
+    if( !m_initialized )
+    {
+        m_id = glCreateProgram();
+        m_initialized = true;
+    }
 }
 
 

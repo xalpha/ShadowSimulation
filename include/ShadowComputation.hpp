@@ -64,6 +64,8 @@ public:
 
     void compute( int steps, bool smoothShading );
 
+    std::weak_ptr<Mesh> mesh();
+
 protected:
 	// initialize the program
     void initModel();
