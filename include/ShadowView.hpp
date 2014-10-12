@@ -84,7 +84,7 @@ public:
 //	// render functions
     void renderBackground();
 //    void renderSun();
-//    void renderGround();
+    void renderGround();
 //    void renderEarth();
 //    void renderMesh();
 //    void renderMeshTex();

@@ -30,10 +30,10 @@ ShadowView::ShadowView(QWidget *parent) : QGLWidget(parent)
 //	g_iWindowHeight=600;
 //	g_fAspect=(float)g_iWindowWidth / (float)g_iWindowHeight;
 
-//	// camera properties
-//	g_fCameraAzimuth = 0.0f;
-//	g_fCameraElevation = 0.0f;
-//	g_fCameraZoom = -3.5f;
+    // camera properties
+    g_fCameraAzimuth = 0.0f;
+    g_fCameraElevation = 0.0f;
+    g_fCameraZoom = -3.5f;
 
 //	// mouse handling
 //	g_iMousePosX = 0;
@@ -111,7 +111,12 @@ void ShadowView::paintGL()
     glRotatef(g_fCameraAzimuth, 0.0f, 1.0f, 0.0f);    // rotate azimuth
     //glTranslatef( 0.0f, -g_fGroundLevel, 0.0f);   // Lower the whole scene so that the center of the Mesh overlappes with the center of rotation
 
-    if( m_mesh.expired() )
+    std::cout << g_fCameraZoom << " \t" << g_fCameraElevation << " \t" << g_fCameraAzimuth << std::endl;
+    std::cout.flush();
+
+    renderGround();
+
+    if( !m_mesh.expired() )
     {
         // enable sceneRendering Shader
         //sceneRendering.enable();
@@ -1133,21 +1138,21 @@ void ShadowView::renderBackground()
 //    glDepthMask(true);
 //}
 
-//void ShadowView::renderGround() {
+void ShadowView::renderGround() {
 
-//    //glColor3f(1,1,1);
-//    glBegin(GL_QUADS);
-//        glNormal3f( 0.0f, 1.0f, 0.0f); // needs only to be set if it changes.
-//        glTexCoord2f( 1.0f, 0.0f);
-//        glVertex3f(-2.0f,0.0f,-2.0f);
-//        glTexCoord2f( 1.0f, 1.0f);
-//        glVertex3f(-2.0f,0.0f,+2.0f);
-//        glTexCoord2f( 0.0f, 1.0f);
-//        glVertex3f(+2.0f,0.0f,+2.0f);
-//        glTexCoord2f( 0.0f, 0.0f);
-//        glVertex3f(+2.0f,0.0f,-2.0f);
-//    glEnd();
-//}
+    //glColor3f(1,1,1);
+    glBegin(GL_QUADS);
+        glNormal3f( 0.0f, 1.0f, 0.0f); // needs only to be set if it changes.
+        glTexCoord2f( 1.0f, 0.0f);
+        glVertex3f(-2.0f,0.0f,-2.0f);
+        glTexCoord2f( 1.0f, 1.0f);
+        glVertex3f(-2.0f,0.0f,+2.0f);
+        glTexCoord2f( 0.0f, 1.0f);
+        glVertex3f(+2.0f,0.0f,+2.0f);
+        glTexCoord2f( 0.0f, 0.0f);
+        glVertex3f(+2.0f,0.0f,-2.0f);
+    glEnd();
+}
 
 //void ShadowView::renderMesh() {
 
